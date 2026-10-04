@@ -3,7 +3,6 @@ name: Codex auto merge
 on:
   pull_request:
     branches:
-      - rebuild-v2
       - main
     types:
       - opened
@@ -18,6 +17,7 @@ jobs:
   validate:
     if: >-
       startsWith(github.event.pull_request.head.ref, 'codex/') &&
+      github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
@@ -48,6 +48,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Check whitespace
+        run: git diff --check
+
   merge:
     needs: validate
     runs-on: ubuntu-latest
@@ -63,5 +66,5 @@ jobs:
         if: env.PR_IS_DRAFT == 'true'
         run: gh pr ready "$PR_URL"
 
-      - name: Squash and merge pull request
-        run: gh pr merge "$PR_URL" --squash --delete-branch
+      - name: Enable squash auto-merge
+        run: gh pr merge "$PR_URL" --auto --squash --delete-branch
