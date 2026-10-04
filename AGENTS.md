@@ -2,20 +2,19 @@
 
 ## Política de entrega
 
-Cuando una tarea modifique código:
+Para cada tarea que modifique el repositorio:
 
-1. Codex trabaja partiendo de la rama seleccionada al crear la tarea.
-2. Nunca modifica directamente `main` ni `rebuild-v2`.
-3. Antes de entregar, ejecuta:
+1. Codex parte siempre de `main`.
+2. Nunca modifica `main` directamente.
+3. Trabaja en una rama `codex/*`.
+4. Antes de entregar, ejecuta:
    - `npm test`
    - `npm run typecheck`
    - `npm run lint`
    - `npm run build`
-4. Si alguna comprobación falla, debe corregirla antes de entregar.
-5. Codex prepara una única Pull Request mediante el mecanismo nativo de GitHub/Codex.
-6. La base de la Pull Request debe ser exactamente la rama desde la que comenzó la tarea:
-   - desde `rebuild-v2`, hacia `rebuild-v2`;
-   - desde `main`, hacia `main`.
+   - `git diff --check`
+5. Si alguna comprobación falla, debe corregirla antes de entregar.
+6. Codex prepara una única Draft Pull Request hacia `main` mediante el mecanismo nativo de Codex/GitHub.
 7. No crea una segunda Pull Request para correcciones de la misma tarea.
-8. GitHub Actions se encarga de la validación final, Ready for review, squash merge y eliminación de la rama.
+8. GitHub Actions se encarga de la validación final, del paso de Draft a Ready, de activar GitHub Auto-merge con squash y de la eliminación de la rama tras el merge. Codex nunca fusiona la PR manualmente.
 9. Nunca hace force-push.
