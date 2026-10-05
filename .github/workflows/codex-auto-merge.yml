@@ -8,6 +8,7 @@ on:
       - opened
       - reopened
       - synchronize
+      - ready_for_review
 
 concurrency:
   group: codex-pr-${{ github.event.pull_request.number }}
@@ -53,6 +54,9 @@ jobs:
 
   merge:
     needs: validate
+    if: >-
+      !startsWith(github.event.pull_request.head.ref, 'codex/review-') ||
+      github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -67,4 +71,23 @@ jobs:
         run: gh pr ready "$PR_URL"
 
       - name: Enable squash auto-merge
-        run: gh pr merge "$PR_URL" --auto --squash --delete-branch
+        shell: bash
+        run: |
+          max_attempts=4
+          for ((attempt=1; attempt<=max_attempts; attempt++)); do
+            if output=$(gh pr merge "$PR_URL" --auto --squash --delete-branch 2>&1); then
+              printf '%s\n' "$output"
+              exit 0
+            else
+              status=$?
+              printf '%s\n' "$output" >&2
+            fi
+
+            if [[ "${output,,}" != *"pull request is in unstable status"* ]] ||
+               (( attempt == max_attempts )); then
+              exit "$status"
+            fi
+
+            echo "GitHub is still updating the pull request; retrying in 5 seconds ($attempt/$max_attempts)."
+            sleep 5
+          done
