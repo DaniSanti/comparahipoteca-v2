@@ -50,3 +50,13 @@ test("preserves the exact Euribor in a variable snapshot", () => {
   assert.equal(snapshot.euribor, 2.123456);
   assert.equal(snapshot.appliedTin, 2.773456);
 });
+
+test("removing from a full comparison allows another snapshot without losing the others", () => {
+  const full = Array.from({ length: 5 }, (_, index) => makeSnapshot(String(index)));
+  const removed = removeSimulation(full, "2");
+  const replacement = makeSnapshot("replacement");
+  const added = addSimulation(removed, replacement);
+  assert.deepEqual(added.map(({ id }) => id), ["0", "1", "3", "4", "replacement"]);
+  assert.equal(full.length, 5);
+  assert.equal(added[0], full[0]);
+});

@@ -1,6 +1,9 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { calculateMortgage } from "../../domain/mortgageCalculations";
-import { validateMortgageInput } from "../../domain/mortgageValidation";
+import {
+  validateMortgageInput,
+  type MortgageField,
+} from "../../domain/mortgageValidation";
 import type { MortgageInput, MortgageType } from "../../domain/mortgage";
 import { ComparisonTable } from "../comparison/ComparisonTable";
 import {
@@ -14,6 +17,12 @@ import {
   parseSharedSimulation,
   serializeSharedSimulation,
 } from "../sharing/sharedSimulation";
+import {
+  getCalculationIssue,
+  getVisibleErrors,
+  type TouchedFields,
+} from "./formValidation";
+import { shareLink } from "../sharing/shareLink";
 import { chooseEuriborValue } from "./euriborDefault";
 import { useEuribor } from "./useEuribor";
 
@@ -93,7 +102,13 @@ export function MortgageSimulator() {
   const [loaded] = useState(initialState);
   const [values, setValues] = useState(loaded.values);
   const [simulations, setSimulations] = useState<readonly MortgageSnapshot[]>([]);
-  const [showErrors, setShowErrors] = useState(false);
+  const [touched, setTouched] = useState<TouchedFields>({});
+  const [comparisonFeedback, setComparisonFeedback] = useState("");
+  const [resultAnnouncement, setResultAnnouncement] = useState("");
+  const [sharingId, setSharingId] = useState<string | null>(null);
+  const addButtonRef = useRef<HTMLButtonElement>(null);
+  const resultsTitleRef = useRef<HTMLHeadingElement>(null);
+  const fallbackRef = useRef<HTMLInputElement>(null);
   const [shareFeedback, setShareFeedback] = useState("");
   const [fallbackUrl, setFallbackUrl] = useState("");
   const euriborManuallyEdited = useRef(false);
@@ -101,6 +116,8 @@ export function MortgageSimulator() {
   const input = useMemo(() => toInput(values), [values]);
   const errors = useMemo(() => validateMortgageInput(input), [input]);
   const result = useMemo(() => calculateMortgage(input), [input]);
+  const visibleErrors = getVisibleErrors(errors, touched);
+  const calculationIssue = getCalculationIssue(errors);
   const isFull = simulations.length >= MAX_COMPARISONS;
 
   useEffect(() => {
@@ -116,24 +133,52 @@ export function MortgageSimulator() {
     }));
   }, [euriborState, loaded]);
 
+  // Announce a concise result after typing pauses, rather than the whole panel.
+  const announcement = result
+    ? `Cuota mensual estimada: ${money.format(result.monthlyPayment)}. TIN aplicado: ${percent.format(result.annualInterestRate)} %.`
+    : `No se puede calcular la cuota. ${calculationIssue}`;
+  useEffect(() => {
+    const timer = window.setTimeout(() => setResultAnnouncement(announcement), 500);
+    return () => window.clearTimeout(timer);
+  }, [announcement]);
+
+  useEffect(() => {
+    if (fallbackUrl) fallbackRef.current?.focus();
+  }, [fallbackUrl]);
+
+  const touch = (field: MortgageField) =>
+    setTouched((current) => ({ ...current, [field]: true }));
+
   const update = <Key extends keyof FormValues>(
     field: Key,
     value: FormValues[Key],
   ) => setValues((current) => ({ ...current, [field]: value }));
-
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    setShowErrors(true);
-  };
 
   const addCurrent = () => {
     if (!result || isFull) return;
     setSimulations((current) =>
       addSimulation(current, createMortgageSnapshot(input, result)),
     );
+    setComparisonFeedback(
+      `Hipoteca ${simulations.length + 1} añadida. ${simulations.length + 1} de ${MAX_COMPARISONS} simulaciones.${simulations.length + 1 === MAX_COMPARISONS ? " Máximo alcanzado. Elimina una para añadir otra." : ""}`,
+    );
   };
 
-  const share = async (snapshot: MortgageSnapshot) => {
+  const removeCurrent = (id: string) => {
+    const index = simulations.findIndex((item) => item.id === id);
+    if (index < 0) return;
+    setSimulations((current) => removeSimulation(current, id));
+    setComparisonFeedback(
+      `Hipoteca ${index + 1} eliminada. ${simulations.length - 1} de ${MAX_COMPARISONS} simulaciones. Puedes añadir otra.`,
+    );
+    if (simulations.length === 1) {
+      if (result) addButtonRef.current?.focus({ preventScroll: true });
+      else resultsTitleRef.current?.focus({ preventScroll: true });
+    }
+  };
+
+  const share = async (snapshot: MortgageSnapshot, number: number) => {
+    if (sharingId) return;
     const shareInput: MortgageInput =
       snapshot.type === "fixed"
         ? {
@@ -153,25 +198,25 @@ export function MortgageSimulator() {
           };
     const url = serializeSharedSimulation(shareInput, window.location.href);
 
+    const label = `Hipoteca ${number}`;
     setFallbackUrl("");
-
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: "Simulación hipotecaria", url });
-        setShareFeedback("Enlace compartido.");
-      } else if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-        setShareFeedback("Enlace copiado al portapapeles.");
-      } else {
-        setFallbackUrl(url);
-        setShareFeedback("Copia este enlace para compartir la simulación.");
-      }
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") return;
-
-      setFallbackUrl(url);
-      setShareFeedback("No se pudo copiar automáticamente. Copia este enlace.");
-    }
+    setShareFeedback(`Compartiendo ${label}…`);
+    setSharingId(snapshot.id);
+    const outcome = await shareLink(url, `${label} · ComparaHipoteca`, {
+      share: navigator.share ? (data) => navigator.share(data) : undefined,
+      copy: navigator.clipboard?.writeText
+        ? (link) => navigator.clipboard.writeText(link)
+        : undefined,
+    });
+    setSharingId(null);
+    const messages = {
+      shared: `${label}: enlace compartido.`,
+      copied: `${label}: enlace copiado al portapapeles.`,
+      cancelled: `${label}: se ha cancelado compartir.`,
+      manual: `${label}: no se pudo compartir ni copiar automáticamente. Copia el enlace de abajo.`,
+    };
+    setShareFeedback(messages[outcome]);
+    if (outcome === "manual") setFallbackUrl(url);
   };
 
   return (
@@ -179,10 +224,7 @@ export function MortgageSimulator() {
       <header className="intro">
         <p className="eyebrow">ComparaHipoteca</p>
         <h1>Simulador hipotecario</h1>
-        <p>
-          Calcula una estimación clara de tu hipoteca y compara hasta cinco
-          escenarios.
-        </p>
+        <p>Explora tu cuota y compara hasta 5 hipotecas.</p>
       </header>
 
       {loaded.shared && (
@@ -192,8 +234,17 @@ export function MortgageSimulator() {
       )}
 
       <div className="simulator-layout">
-        <form className="panel form-panel" onSubmit={submit} noValidate>
-          <h2>Datos de la compra</h2>
+        <form
+          className="panel form-panel"
+          onSubmit={(event) => event.preventDefault()}
+          noValidate
+          aria-labelledby="form-title"
+          aria-describedby="auto-calculation"
+        >
+          <h2 id="form-title">Datos de tu hipoteca</h2>
+          <p id="auto-calculation" className="auto-note">
+            La cuota se actualiza al cambiar los datos.
+          </p>
           <div className="field-grid">
             <NumberField
               id="purchasePrice"
@@ -201,7 +252,8 @@ export function MortgageSimulator() {
               suffix="€"
               value={values.purchasePrice}
               onChange={(value) => update("purchasePrice", value)}
-              error={showErrors ? errors.purchasePrice : undefined}
+              onBlur={() => touch("purchasePrice")}
+              error={visibleErrors.purchasePrice}
             />
             <NumberField
               id="savings"
@@ -209,7 +261,8 @@ export function MortgageSimulator() {
               suffix="€"
               value={values.savings}
               onChange={(value) => update("savings", value)}
-              error={showErrors ? errors.savings : undefined}
+              onBlur={() => touch("savings")}
+              error={visibleErrors.savings}
             />
             <NumberField
               id="termYears"
@@ -217,7 +270,8 @@ export function MortgageSimulator() {
               suffix="años"
               value={values.termYears}
               onChange={(value) => update("termYears", value)}
-              error={showErrors ? errors.termYears : undefined}
+              onBlur={() => touch("termYears")}
+              error={visibleErrors.termYears}
               step="1"
             />
           </div>
@@ -250,11 +304,12 @@ export function MortgageSimulator() {
           {values.type === "fixed" ? (
             <NumberField
               id="fixedTin"
-              label="TIN anual"
+              label="TIN fijo anual"
               suffix="%"
               value={values.fixedTin}
               onChange={(value) => update("fixedTin", value)}
-              error={showErrors ? errors.fixedTin : undefined}
+              onBlur={() => touch("fixedTin")}
+              error={visibleErrors.fixedTin}
             />
           ) : (
             <div>
@@ -268,7 +323,9 @@ export function MortgageSimulator() {
                     euriborManuallyEdited.current = true;
                     update("euribor", value);
                   }}
-                  error={showErrors ? errors.euribor : undefined}
+                  onBlur={() => touch("euribor")}
+                  error={visibleErrors.euribor}
+                  describedBy="euribor-source"
                 />
                 <NumberField
                   id="differential"
@@ -276,42 +333,47 @@ export function MortgageSimulator() {
                   suffix="%"
                   value={values.differential}
                   onChange={(value) => update("differential", value)}
-                  error={showErrors ? errors.differential : undefined}
+                  onBlur={() => touch("differential")}
+                  error={visibleErrors.differential}
                 />
               </div>
-              <EuriborStatus state={euriborState} onRetry={retryEuribor} />
+              <div id="euribor-source">
+                <EuriborStatus state={euriborState} onRetry={retryEuribor} />
+              </div>
             </div>
           )}
-
-          <button type="submit">Calcular hipoteca</button>
-          <p className="form-note">
-            Estimación orientativa. Los gastos se calculan como un 10 % del
-            precio.
-          </p>
         </form>
 
         <section
           className="panel results-panel"
-          aria-live="polite"
           aria-labelledby="results-title"
         >
-          <h2 id="results-title">Tu estimación</h2>
+          <h2 id="results-title" ref={resultsTitleRef} tabIndex={-1}>
+            Tu estimación
+          </h2>
           {result ? (
             <>
               <div className="primary-result">
                 <span>Cuota mensual estimada</span>
                 <strong>{money.format(result.monthlyPayment)}</strong>
                 <small>
-                  TIN aplicado: {percent.format(result.annualInterestRate)} %
+                  {values.type === "variable"
+                    ? "TIN: Euríbor + diferencial"
+                    : "TIN aplicado"}: {percent.format(result.annualInterestRate)} %
                 </small>
               </div>
+              {values.type === "variable" && (
+                <p className="variable-note">
+                  Cuota con el TIN actual; cambiará si varía el Euríbor.
+                </p>
+              )}
               <dl className="result-list">
                 <Result
                   label="Importe financiado"
                   value={money.format(result.financedAmount)}
                 />
                 <Result
-                  label="Gastos de compra estimados"
+                  label="Gastos estimados"
                   value={money.format(result.purchaseCosts)}
                 />
                 <Result
@@ -324,43 +386,58 @@ export function MortgageSimulator() {
                   emphasized
                 />
               </dl>
-              <button
-                type="button"
-                className="add-button"
-                onClick={addCurrent}
-                disabled={isFull}
-              >
-                Añadir a comparación
-                <span>{simulations.length} de 5</span>
-              </button>
-              {isFull && (
-                <p className="limit-note">
-                  Has alcanzado el máximo de 5 simulaciones.
-                </p>
-              )}
             </>
           ) : (
-            <p className="empty-result">
-              Revisa los datos para obtener una estimación.
-            </p>
+            <div className="empty-result">
+              <p>Corrige los datos para ver la cuota.</p>
+              <p>{calculationIssue}</p>
+            </div>
           )}
+          <p className="form-note">
+            Estimación orientativa. Gastos estimados: 10 % del precio de compra.
+          </p>
+          <button
+            ref={addButtonRef}
+            type="button"
+            className="add-button"
+            onClick={addCurrent}
+            aria-disabled={!result || isFull || undefined}
+            aria-describedby="comparison-limit"
+          >
+            Añadir a comparación
+            <span>{simulations.length} de {MAX_COMPARISONS}</span>
+          </button>
+          <p className="limit-note" id="comparison-limit">
+            {isFull
+              ? "Máximo de 5 hipotecas. Elimina una para añadir otra."
+              : !result
+                ? "Corrige los datos antes de añadir esta hipoteca."
+                : "Las comparaciones no se guardan al cerrar la sesión."}
+          </p>
         </section>
       </div>
+      <p className="sr-only" role="status" aria-atomic="true">
+        {resultAnnouncement}
+      </p>
+      <p className="comparison-feedback" role="status" aria-atomic="true">
+        {comparisonFeedback}
+      </p>
 
       <ComparisonTable
         simulations={simulations}
-        onRemove={(id) =>
-          setSimulations((current) => removeSimulation(current, id))
-        }
+        onRemove={removeCurrent}
+        sharingId={sharingId}
         onShare={share}
       />
 
-      <div className="share-feedback" aria-live="polite">
-        {shareFeedback}
+      <div className="share-feedback">
+        <p role="status" aria-atomic="true">{shareFeedback}</p>
         {fallbackUrl && (
           <div className="copy-field">
+            <label htmlFor="share-url">Enlace de la hipoteca para compartir</label>
             <input
-              aria-label="Enlace para compartir"
+              id="share-url"
+              ref={fallbackRef}
               readOnly
               value={fallbackUrl}
               onFocus={(event) => event.currentTarget.select()}
@@ -379,7 +456,11 @@ interface EuriborStatusProps {
 
 function EuriborStatus({ state, onRetry }: EuriborStatusProps) {
   if (state.status === "loading") {
-    return <p className="euribor-status">Consultando último Euríbor oficial…</p>;
+    return (
+      <p className="euribor-status" role="status">
+        Consultando Euríbor del Banco de España… Puedes editarlo.
+      </p>
+    );
   }
   if (state.status === "error") {
     return (
@@ -396,9 +477,9 @@ function EuriborStatus({ state, onRetry }: EuriborStatusProps) {
   }
   return (
     <p className="euribor-status" role="status">
-      Euríbor oficial: {percent.format(state.data.value)} % ·{" "}
-      {referenceMonth.format(state.data.date)} · {state.data.source}. El campo
-      sigue siendo editable.
+      Euríbor oficial del Banco de España: {percent.format(state.data.value)} % ·{" "}
+      {referenceMonth.format(state.data.date)}. Puedes editarlo para explorar
+      escenarios.
     </p>
   );
 }
@@ -410,6 +491,8 @@ interface NumberFieldProps {
   value: string;
   onChange: (value: string) => void;
   error?: string;
+  onBlur: () => void;
+  describedBy?: string;
   step?: string;
 }
 
@@ -419,6 +502,8 @@ function NumberField({
   suffix,
   value,
   onChange,
+  onBlur,
+  describedBy,
   error,
   step = "any",
 }: NumberFieldProps) {
@@ -436,10 +521,13 @@ function NumberField({
           step={step}
           value={value}
           onChange={(event) => onChange(event.target.value)}
+          onBlur={onBlur}
           aria-invalid={Boolean(error)}
-          aria-describedby={error ? errorId : undefined}
+          aria-describedby={[`${id}-unit`, describedBy, error ? errorId : undefined]
+            .filter(Boolean)
+            .join(" ")}
         />
-        <span>{suffix}</span>
+        <span id={`${id}-unit`}>{suffix}</span>
       </div>
       {error && (
         <p className="field-error" id={errorId}>

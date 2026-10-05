@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "test": "node --import tsx --test tests/*.test.mjs",
+    "test": "tsx --tsconfig tsconfig.app.json --test tests/*.test.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.app.json --noEmit"
