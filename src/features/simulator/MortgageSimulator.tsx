@@ -23,6 +23,8 @@ import { shareLink } from "../sharing/shareLink";
 import { chooseEuriborValue } from "./euriborDefault";
 import { useEuribor } from "./useEuribor";
 import { toMortgageInput, validateFormValues, type FormValues } from "./numberInput";
+import { analytics, trackEvent } from "../../analytics/runtime";
+import { createCalculationTracker } from "../../analytics/calculationTracking";
 
 const defaultValues: FormValues = {
   purchasePrice: "250000",
@@ -75,6 +77,12 @@ const referenceMonth = new Intl.DateTimeFormat("es-ES", {
 export function MortgageSimulator() {
   const [loaded] = useState(initialState);
   const [values, setValues] = useState(loaded.values);
+  const [userRevision, setUserRevision] = useState(0);
+  const [calculationTracker] = useState(() => createCalculationTracker({
+    canTrack: analytics.canTrack,
+    emit: () => trackEvent("mortgage_calculated"),
+  }));
+  const manualShareTracked = useRef(false);
   const [simulations, setSimulations] = useState<readonly MortgageSnapshot[]>([]);
   const [touched, setTouched] = useState<TouchedFields>({});
   const [comparisonFeedback, setComparisonFeedback] = useState("");
@@ -93,6 +101,15 @@ export function MortgageSimulator() {
   const visibleErrors = getVisibleErrors(errors, touched);
   const calculationIssue = getCalculationIssue(errors);
   const isFull = simulations.length >= MAX_COMPARISONS;
+
+  useEffect(() => {
+    analytics.sharedSimulationOpened(loaded.shared);
+  }, [loaded.shared]);
+
+  useEffect(() => {
+    calculationTracker.observe(input, result !== null, userRevision > 0);
+    return calculationTracker.stop;
+  }, [input, result, userRevision, calculationTracker]);
 
   useEffect(() => {
     if (euriborState.status !== "success") return;
@@ -126,13 +143,18 @@ export function MortgageSimulator() {
   const update = <Key extends keyof FormValues>(
     field: Key,
     value: FormValues[Key],
-  ) => setValues((current) => ({ ...current, [field]: value }));
+  ) => {
+    if (values[field] === value) return;
+    setUserRevision((current) => current + 1);
+    setValues((current) => ({ ...current, [field]: value }));
+  };
 
   const addCurrent = () => {
     if (!result || isFull) return;
     setSimulations((current) =>
       addSimulation(current, createMortgageSnapshot(input, result)),
     );
+    trackEvent("comparison_added");
     setComparisonFeedback(
       `Hipoteca ${simulations.length + 1} añadida. ${simulations.length + 1} de ${MAX_COMPARISONS} simulaciones.${simulations.length + 1 === MAX_COMPARISONS ? " Máximo alcanzado. Elimina una para añadir otra." : ""}`,
     );
@@ -142,6 +164,7 @@ export function MortgageSimulator() {
     const index = simulations.findIndex((item) => item.id === id);
     if (index < 0) return;
     setSimulations((current) => removeSimulation(current, id));
+    trackEvent("comparison_removed");
     setComparisonFeedback(
       `Hipoteca ${index + 1} eliminada. ${simulations.length - 1} de ${MAX_COMPARISONS} simulaciones. Puedes añadir otra.`,
     );
@@ -174,6 +197,7 @@ export function MortgageSimulator() {
 
     const label = `Hipoteca ${number}`;
     setFallbackUrl("");
+    manualShareTracked.current = false;
     setShareFeedback(`Compartiendo ${label}…`);
     setSharingId(snapshot.id);
     const outcome = await shareLink(url, `${label} · ComparaHipoteca`, {
@@ -190,6 +214,9 @@ export function MortgageSimulator() {
       manual: `${label}: no se pudo compartir ni copiar automáticamente. Copia el enlace de abajo.`,
     };
     setShareFeedback(messages[outcome]);
+    if (outcome === "shared" || outcome === "copied") {
+      trackEvent("simulation_shared", { method: outcome === "shared" ? "native" : "clipboard" });
+    }
     if (outcome === "manual") setFallbackUrl(url);
   };
 
@@ -418,6 +445,11 @@ export function MortgageSimulator() {
               readOnly
               value={fallbackUrl}
               onFocus={(event) => event.currentTarget.select()}
+              onCopy={() => {
+                if (manualShareTracked.current) return;
+                manualShareTracked.current = true;
+                trackEvent("simulation_shared", { method: "manual" });
+              }}
             />
           </div>
         )}
