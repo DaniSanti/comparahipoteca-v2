@@ -1,4 +1,5 @@
-import type { MortgageSnapshot } from "./comparisonState";
+import { useRef } from "react";
+import { MAX_COMPARISONS, type MortgageSnapshot } from "./comparisonState";
 
 const money = new Intl.NumberFormat("es-ES", {
   style: "currency",
@@ -10,14 +11,24 @@ const percent = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 3 });
 interface ComparisonTableProps {
   simulations: readonly MortgageSnapshot[];
   onRemove: (id: string) => void;
-  onShare: (simulation: MortgageSnapshot) => void;
+  onShare: (simulation: MortgageSnapshot, number: number) => void;
+  sharingId: string | null;
 }
 
 export function ComparisonTable({
   simulations,
   onRemove,
   onShare,
+  sharingId,
 }: ComparisonTableProps) {
+  const removeButtons = useRef(new Map<string, HTMLButtonElement>());
+
+  const remove = (item: MortgageSnapshot, index: number) => {
+    const next = simulations[index + 1] ?? simulations[index - 1];
+    onRemove(item.id);
+    if (next) removeButtons.current.get(next.id)?.focus({ preventScroll: true });
+  };
+
   if (simulations.length === 0) return null;
 
   const rows = [
@@ -51,7 +62,7 @@ export function ComparisonTable({
     },
     {
       label: "Precio",
-      className: "secondary-row",
+      className: "secondary-row secondary-start",
       value: (item: MortgageSnapshot) => money.format(item.purchasePrice),
     },
     {
@@ -81,18 +92,25 @@ export function ComparisonTable({
           <p className="eyebrow">Comparación local</p>
           <h2 id="comparison-title">Tus simulaciones</h2>
         </div>
-        <span>{simulations.length} de 5</span>
+        <span>{simulations.length} de {MAX_COMPARISONS}</span>
       </div>
       <p className="comparison-help">
-        Compara las cifras sin salir de esta página. No se guardan al cerrar la
-        sesión.
+        Estimaciones orientativas. No se guardan al cerrar la sesión.
+      </p>
+      <p className="scroll-hint" id="comparison-scroll-hint">
+        Desliza horizontalmente para comparar.
       </p>
       <div
         className="comparison-scroll"
         tabIndex={0}
-        aria-label="Tabla comparativa de hipotecas"
+        role="region"
+        aria-labelledby="comparison-caption"
+        aria-describedby="comparison-scroll-hint"
       >
         <table>
+          <caption id="comparison-caption">
+            Comparación de {simulations.length} {simulations.length === 1 ? "hipoteca" : "hipotecas"}
+          </caption>
           <thead>
             <tr>
               <th scope="col">Dato</th>
@@ -112,6 +130,8 @@ export function ComparisonTable({
                 ))}
               </tr>
             ))}
+          </tbody>
+          <tbody>
             <tr className="actions-row">
               <th scope="row">Acciones</th>
               {simulations.map((item, index) => (
@@ -119,14 +139,21 @@ export function ComparisonTable({
                   <button
                     type="button"
                     className="table-button"
-                    onClick={() => onShare(item)}
+                    onClick={() => onShare(item, index + 1)}
+                    aria-label={`Compartir Hipoteca ${index + 1}`}
+                    aria-busy={sharingId === item.id}
+                    aria-disabled={sharingId !== null || undefined}
                   >
-                    Compartir
+                    {sharingId === item.id ? "Compartiendo…" : "Compartir"}
                   </button>
                   <button
                     type="button"
                     className="table-button remove"
-                    onClick={() => onRemove(item.id)}
+                    ref={(button) => {
+                      if (button) removeButtons.current.set(item.id, button);
+                      else removeButtons.current.delete(item.id);
+                    }}
+                    onClick={() => remove(item, index)}
                     aria-label={`Eliminar Hipoteca ${index + 1}`}
                   >
                     Eliminar
