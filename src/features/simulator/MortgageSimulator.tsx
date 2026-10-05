@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { calculateMortgage } from "../../domain/mortgageCalculations";
-import {
-  validateMortgageInput,
-  type MortgageField,
-} from "../../domain/mortgageValidation";
-import type { MortgageInput, MortgageType } from "../../domain/mortgage";
+import type { MortgageField } from "../../domain/mortgageValidation";
+import type { MortgageInput } from "../../domain/mortgage";
 import { ComparisonTable } from "../comparison/ComparisonTable";
 import {
   addSimulation,
@@ -25,16 +22,7 @@ import {
 import { shareLink } from "../sharing/shareLink";
 import { chooseEuriborValue } from "./euriborDefault";
 import { useEuribor } from "./useEuribor";
-
-interface FormValues {
-  purchasePrice: string;
-  savings: string;
-  termYears: string;
-  type: MortgageType;
-  fixedTin: string;
-  euribor: string;
-  differential: string;
-}
+import { toMortgageInput, validateFormValues, type FormValues } from "./numberInput";
 
 const defaultValues: FormValues = {
   purchasePrice: "250000",
@@ -45,20 +33,6 @@ const defaultValues: FormValues = {
   euribor: "",
   differential: "0.75",
 };
-
-const parseNumber = (value: string): number =>
-  value.trim() === "" ? Number.NaN : Number(value.replace(",", "."));
-
-const toInput = (values: FormValues): MortgageInput => ({
-  purchasePrice: parseNumber(values.purchasePrice),
-  savings: parseNumber(values.savings),
-  termYears: parseNumber(values.termYears),
-  type: values.type,
-  fixedTin: values.type === "fixed" ? parseNumber(values.fixedTin) : undefined,
-  euribor: values.type === "variable" ? parseNumber(values.euribor) : undefined,
-  differential:
-    values.type === "variable" ? parseNumber(values.differential) : undefined,
-});
 
 const fromInput = (input: MortgageInput): FormValues => ({
   purchasePrice: String(input.purchasePrice),
@@ -113,8 +87,8 @@ export function MortgageSimulator() {
   const [fallbackUrl, setFallbackUrl] = useState("");
   const euriborManuallyEdited = useRef(false);
   const { state: euriborState, retry: retryEuribor } = useEuribor();
-  const input = useMemo(() => toInput(values), [values]);
-  const errors = useMemo(() => validateMortgageInput(input), [input]);
+  const input = useMemo(() => toMortgageInput(values), [values]);
+  const errors = useMemo(() => validateFormValues(values), [values]);
   const result = useMemo(() => calculateMortgage(input), [input]);
   const visibleErrors = getVisibleErrors(errors, touched);
   const calculationIssue = getCalculationIssue(errors);
@@ -272,7 +246,7 @@ export function MortgageSimulator() {
               onChange={(value) => update("termYears", value)}
               onBlur={() => touch("termYears")}
               error={visibleErrors.termYears}
-              step="1"
+              integer
             />
           </div>
 
@@ -342,6 +316,9 @@ export function MortgageSimulator() {
               </div>
             </div>
           )}
+          <p className="form-note" id="decimal-format">
+            Decimales con coma o punto, sin separadores de miles.
+          </p>
         </form>
 
         <section
@@ -493,7 +470,7 @@ interface NumberFieldProps {
   error?: string;
   onBlur: () => void;
   describedBy?: string;
-  step?: string;
+  integer?: boolean;
 }
 
 function NumberField({
@@ -505,7 +482,7 @@ function NumberField({
   onBlur,
   describedBy,
   error,
-  step = "any",
+  integer = false,
 }: NumberFieldProps) {
   const errorId = `${id}-error`;
 
@@ -516,14 +493,19 @@ function NumberField({
         <input
           id={id}
           name={id}
-          type="number"
-          inputMode="decimal"
-          step={step}
+          type={integer ? "number" : "text"}
+          inputMode={integer ? "numeric" : "decimal"}
+          step={integer ? "1" : undefined}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           onBlur={onBlur}
           aria-invalid={Boolean(error)}
-          aria-describedby={[`${id}-unit`, describedBy, error ? errorId : undefined]
+          aria-describedby={[
+            `${id}-unit`,
+            integer ? undefined : "decimal-format",
+            describedBy,
+            error ? errorId : undefined,
+          ]
             .filter(Boolean)
             .join(" ")}
         />
