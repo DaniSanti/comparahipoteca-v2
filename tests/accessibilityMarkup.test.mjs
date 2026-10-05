@@ -15,7 +15,7 @@ test("initial simulator exposes named form, labels, automatic result and no subm
   assert.doesNotMatch(html, /Calcular hipoteca|type="submit"|aria-invalid="true"/);
   for (const id of ["purchasePrice", "savings", "termYears", "fixedTin"]) {
     assert.match(html, new RegExp(`<label for="${id}">`));
-    assert.match(html, new RegExp(`aria-describedby="${id}-unit"`));
+    assert.match(html, new RegExp(`aria-describedby="${id}-unit${id === "termYears" ? "" : " decimal-format"}"`));
   }
   assert.match(html, /<fieldset><legend>Tipo de hipoteca<\/legend>/);
   assert.match(html, /Cuota mensual estimada/);
