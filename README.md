@@ -24,10 +24,29 @@ npm run dev
 
 ```sh
 npm test
+npm audit
 npm run typecheck
 npm run lint
 npm run build
+npx playwright install --with-deps chromium
+npm run test:e2e
 ```
+
+`npm test` ejecuta las pruebas unitarias y de integración rápidas. Las E2E cubren
+journeys críticos con Chromium sobre un build de producción en localhost:4173.
+`npm run test:e2e` construye y arranca `npm run preview` automáticamente; no usa el
+servidor de desarrollo. El Banco de España se simula con una respuesta fija y
+las llamadas externas (incluido GA) se bloquean y hacen fallar el test. Las rutas
+de Speed Insights se responden localmente. No se necesita internet para ejecutar
+las E2E una vez instaladas las dependencias y Chromium.
+En entornos que ya proporcionan Chromium puede indicarse su ruta con
+`PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`; CI utiliza el Chromium de Playwright.
+
+El único check requerido `CI` usa Node 20, audita dependencias y ejecuta ambas
+suites; reutiliza el build del mismo job con `PLAYWRIGHT_SKIP_BUILD=1`.
+En fallos sube `playwright-failures` (reporte HTML, traces y capturas) durante
+7 días; no graba vídeo. `codex-auto-merge` solo gestiona Ready y Auto-merge,
+esperando al check requerido; las ramas `codex/review-*` Draft esperan al usuario.
 
 ## Arquitectura
 

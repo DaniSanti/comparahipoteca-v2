@@ -10,7 +10,8 @@
     "test": "tsx --tsconfig tsconfig.app.json --test tests/*.test.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "typecheck": "tsc -p tsconfig.app.json --noEmit"
+    "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.e2e.json --noEmit",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@vercel/speed-insights": "^2.0.0",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22.5.5",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
