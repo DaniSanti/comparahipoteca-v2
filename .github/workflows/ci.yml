@@ -50,6 +50,9 @@ jobs:
           # A valid dummy ID exercises the localhost GA guard in E2E.
           VITE_GA_MEASUREMENT_ID: G-E2ETEST000
 
+      - name: Check bundle budget
+        run: npm run check:bundle
+
       - name: Check whitespace
         run: git diff --check
 
