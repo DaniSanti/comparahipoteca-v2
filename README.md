@@ -47,6 +47,9 @@ El único check requerido `CI` usa Node 20, audita dependencias y ejecuta ambas
 suites; reutiliza el build del mismo job con `PLAYWRIGHT_SKIP_BUILD=1`.
 Después del build comprueba el [presupuesto de bundle](docs/performance.md)
 con `npm run check:bundle`, sin dependencias nuevas ni llamadas de red.
+El [hardening HTTP](docs/security.md) documenta la CSP de Vercel, sus orígenes,
+el hash del JSON-LD y la revisión humana de Preview y producción. Las E2E
+suplementarias aplican headers a respuestas locales; no validan el edge de Vercel.
 En fallos sube `playwright-failures` (reporte HTML, traces y capturas) durante
 7 días; no graba vídeo. `codex-auto-merge` solo gestiona Ready y Auto-merge,
 esperando al check requerido; las ramas `codex/review-*` Draft esperan al usuario.
