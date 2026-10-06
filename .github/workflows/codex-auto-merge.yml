@@ -15,48 +15,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate:
+  merge:
     if: >-
       startsWith(github.event.pull_request.head.ref, 'codex/') &&
       github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name &&
       github.event.pull_request.head.repo.full_name == github.repository &&
-      github.event.pull_request.head.repo.fork == false
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Check out the pull request
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests
-        run: npm test
-
-      - name: Check types
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Build
-        run: npm run build
-
-      - name: Check whitespace
-        run: git diff --check
-
-  merge:
-    needs: validate
-    if: >-
-      !startsWith(github.event.pull_request.head.ref, 'codex/review-') ||
-      github.event.pull_request.draft == false
+      github.event.pull_request.head.repo.fork == false &&
+      (!startsWith(github.event.pull_request.head.ref, 'codex/review-') ||
+       github.event.pull_request.draft == false)
     runs-on: ubuntu-latest
     permissions:
       contents: write
