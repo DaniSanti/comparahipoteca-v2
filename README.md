@@ -36,6 +36,8 @@ npm run build
 - `src/features/comparison`: comparación local de hasta cinco simulaciones.
 - `src/features/sharing`: serialización y lectura segura de URLs compartidas.
 - `src/services`: cliente directo de la API pública del Banco de España.
+- `src/analytics`: consentimiento, carga opcional de métricas, saneamiento de URLs
+  y eventos con parámetros permitidos explícitamente.
 - `tests`: pruebas con el test runner nativo de Node.js.
 
 ## Build de producción
@@ -47,3 +49,53 @@ npm run preview
 
 Vite genera los archivos estáticos en `dist/`; pueden desplegarse en cualquier
 hosting estático.
+
+## Analítica y privacidad
+
+`VITE_GA_MEASUREMENT_ID` es un identificador público de GA4 con formato
+`G-XXXXXXXXXX`; no es un secreto. Configúralo **solo en Production** en Vercel.
+Sin esta variable, o si es inválida, la aplicación funciona sin cargar GA.
+Incluso con un ID válido, GA solo funciona en el hostname exacto
+`comparahipoteca.es` y después de aceptar analítica. Localhost, las previews y
+`comparahipoteca-v2.vercel.app` nunca envían Analytics.
+
+Antes de configurar el ID en producción, **desactiva Medición mejorada en el
+flujo web de GA4**. Sus eventos automáticos (formularios, clics, scroll, etc.)
+dependen de la configuración remota de Google y no forman parte de nuestra
+allowlist. No configures Google Ads, Google Signals ni etiquetas adicionales.
+El código desactiva el page view automático, Google Signals y las señales de
+personalización publicitaria.
+
+No se descarga `gtag.js` antes de aceptar. Usamos consentimiento básico:
+`analytics_storage` pasa de `denied` a `granted` al aceptar; `ad_storage`,
+`ad_user_data` y `ad_personalization` permanecen siempre `denied`.
+Vercel Speed Insights también se monta únicamente tras aceptar.
+
+La única preferencia persistida usa la clave
+`comparahipoteca:analytics-consent:v1` con `accepted` o `rejected`. Si falla
+localStorage, la elección funciona durante la carga actual. Las simulaciones
+no se guardan. «Preferencias de privacidad» permite cambiar la elección.
+Al revocar, se bloquean eventos, se actualiza el consentimiento a `denied`, se
+eliminan best-effort solo las cookies propias `_ga`/`_ga_*` del dominio actual
+y se recarga la página. También se respeta una revocación desde otra pestaña.
+
+Todas las URLs de métricas se reducen a `origin + pathname`, sin query ni hash.
+Los eventos usan un título fijo y un referrer vacío; la política HTTP
+`no-referrer` evita enviar también la URL compartida en cabeceras. No se envían
+campos financieros, IDs de comparación ni URLs compartidas. El saneamiento
+también se aplica al middleware de Speed Insights.
+
+Eventos permitidos:
+
+| Evento | Cuándo se envía |
+| --- | --- |
+| `page_view` | Una vez por carga, después de aceptar. |
+| `mortgage_calculated` | Resultado válido tras una modificación del usuario y 900 ms sin cambios. Escenarios duplicados se omiten mediante una firma exclusivamente en memoria, nunca enviada ni persistida. |
+| `comparison_added` | Una simulación se añade correctamente. |
+| `comparison_removed` | Una simulación se elimina correctamente, sin enviar su ID. |
+| `simulation_shared` | Compartir finaliza correctamente. Solo permite `method`: `native`, `clipboard` o `manual` (copia de la URL de fallback). |
+| `shared_simulation_opened` | Se restaura correctamente una URL `?sim=`, una vez y sin su contenido. |
+
+Las acciones sin consentimiento no se acumulan para enviarlas posteriormente;
+la apertura válida de una URL compartida sí puede registrarse una vez al
+aceptar durante esa carga. La herramienta funciona igual al rechazar.

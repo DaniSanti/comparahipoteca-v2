@@ -1,11 +1,7 @@
 import { createRoot } from 'react-dom/client'
-import { SpeedInsights } from "@vercel/speed-insights/react";
+import { initialisePrivacy } from "./analytics/runtime";
 import App from './App.tsx'
 import './index.css'
 
-createRoot(document.getElementById("root")!).render(
-  <>
-    <App />
-    <SpeedInsights />
-  </>
-);
+initialisePrivacy();
+createRoot(document.getElementById("root")!).render(<App />);
