@@ -28,6 +28,7 @@ npm audit
 npm run typecheck
 npm run lint
 npm run build
+npm run check:bundle
 npx playwright install --with-deps chromium
 npm run test:e2e
 ```
@@ -44,6 +45,8 @@ En entornos que ya proporcionan Chromium puede indicarse su ruta con
 
 El único check requerido `CI` usa Node 20, audita dependencias y ejecuta ambas
 suites; reutiliza el build del mismo job con `PLAYWRIGHT_SKIP_BUILD=1`.
+Después del build comprueba el [presupuesto de bundle](docs/performance.md)
+con `npm run check:bundle`, sin dependencias nuevas ni llamadas de red.
 En fallos sube `playwright-failures` (reporte HTML, traces y capturas) durante
 7 días; no graba vídeo. `codex-auto-merge` solo gestiona Ready y Auto-merge,
 esperando al check requerido; las ramas `codex/review-*` Draft esperan al usuario.
