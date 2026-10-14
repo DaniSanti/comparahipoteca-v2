@@ -9,7 +9,8 @@ for (const width of [320, 390, 1440]) {
     const more = banner.locator('button[aria-controls="privacy-information"]');
     await expect(information).toBeHidden();
     const bounds = await banner.boundingBox();
-    expect(bounds!.height).toBeLessThanOrEqual(width < 760 ? 165 : 100);
+    // System fonts can add a third description line at the narrowest width.
+    expect(bounds!.height).toBeLessThanOrEqual(width === 320 ? 185 : width < 760 ? 165 : 100);
     expect(bounds!.x).toBeGreaterThanOrEqual(0);
     expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
     const accept = banner.getByRole("button", { name: "Aceptar analíticas", exact: true });
