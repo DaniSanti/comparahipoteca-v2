@@ -26,7 +26,7 @@ test("comparison exposes a caption, scoped headers, named actions and share load
   const input = { purchasePrice: 250000, savings: 60000, termYears: 25, type: "fixed", fixedTin: 3.25 };
   const snapshots = ["one", "two"].map((id) => createMortgageSnapshot(input, calculateMortgage(input), id));
   const html = renderToStaticMarkup(createElement(ComparisonTable, {
-    simulations: snapshots, onRemove: () => {}, onShare: () => {}, sharingId: "two",
+    simulations: snapshots, onRemove: () => {}, onAmortization: () => {}, onShare: () => {}, sharingId: "two",
   }));
   assert.match(html, /<caption id="comparison-caption">Comparación de 2 hipotecas/);
   assert.match(html, /role="region" aria-labelledby="comparison-caption"/);

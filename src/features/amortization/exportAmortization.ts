@@ -23,7 +23,7 @@ export function amortizationCsv(rows: readonly AmortizationRow[], period: Amorti
 // WinAnsi covers Spanish labels; each JS character below is encoded as one byte.
 export function amortizationPdf(
   rows: readonly AmortizationRow[], period: AmortizationPeriod,
-  result: MortgageCalculation, variable: boolean,
+  result: MortgageCalculation, variable: boolean, mortgageNumber = 1,
 ): Uint8Array {
   const pageSize = 26;
   const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
@@ -37,7 +37,7 @@ export function amortizationPdf(
     `BT /F1 ${size} Tf 1 0 0 1 ${x} ${y} Tm (${escape(value)}) Tj ET\n`;
   const currency = new Intl.NumberFormat("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   for (let page = 0; page < pageCount; page++) {
-    let stream = text(`ComparaHipoteca · Amortización ${period === "annual" ? "anual" : "mensual"}`, 30, 558, 16);
+    let stream = text(`Hipoteca ${mortgageNumber} · Amortización ${period === "annual" ? "anual" : "mensual"}`, 30, 558, 16);
     stream += text(`Capital: ${currency.format(result.financedAmount)} EUR · TIN: ${decimal(result.annualInterestRate)} % · Plazo: ${result.numberOfPayments / 12} años`, 30, 536);
     stream += text(variable ? "Hipoteca variable: proyección con el TIN actual constante; cambiará si varía el Euríbor." : "Sistema francés. Estimación orientativa, sin comisiones ni amortizaciones anticipadas.", 30, 519);
     stream += text("Importes en EUR. Amortización: capital del periodo. Capital amortizado: acumulado. Años desde el inicio.", 30, 504);

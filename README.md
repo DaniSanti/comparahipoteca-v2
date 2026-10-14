@@ -8,6 +8,10 @@ Banco de España.
 La estimación incluye una tabla de amortización desplegable, con vistas anual y
 mensual y descarga completa de la vista seleccionada en PDF o CSV. La
 amortización muestra el capital del periodo y el capital amortizado acumulado.
+La tabla identifica la hipoteca y muestra por defecto la Hipoteca 1. El botón
+«Amortización» de cada comparación abre la tabla de ese escenario guardado.
+La explicación de las columnas está en un tooltip accesible con ratón, teclado
+o toque; los nombres de las descargas identifican la hipoteca seleccionada.
 Los periodos se cuentan desde el inicio de la hipoteca; en hipotecas variables
 se proyecta el TIN actual constante. Las descargas se generan en el navegador,
 sin enviar los datos financieros a ningún servicio.

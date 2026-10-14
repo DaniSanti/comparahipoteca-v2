@@ -154,17 +154,18 @@ button:disabled, button[aria-disabled="true"] { color: #4d596d; background: #d9d
 
 .amortization-section { margin-top: 24px; }
 .amortization-section summary { min-height: 44px; padding: 10px 0; cursor: pointer; font-weight: 800; }
-.amortization-section summary span { display: inline-block; margin-left: 12px; color: #59657a; font-size: .85rem; font-weight: 400; }
+.amortization-section summary span { margin-left: 12px; color: #59657a; font-weight: 400; }
 .amortization-toolbar { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: end; justify-content: space-between; margin-top: 16px; }
 .amortization-toolbar fieldset { margin: 0; }
 .amortization-downloads { display: flex; flex-wrap: wrap; gap: 10px; }
 .amortization-downloads button { width: auto; min-height: 48px; padding: 10px 14px; font-size: .875rem; }
-.amortization-scroll { max-width: 100%; max-height: 520px; overflow: auto; border: 1px solid #7b879a; border-radius: 10px; margin-top: 16px; }
-.amortization-scroll table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .875rem; }
-.amortization-scroll caption { padding: 12px; color: #59657a; background: #f8fafc; text-align: left; }
+.amortization-scroll { max-height: 520px; overflow: auto; border: 1px solid #7b879a; border-radius: 10px; margin-top: 16px; }
+.amortization-scroll table { width: 100%; border-spacing: 0; font-size: .875rem; }
+.amortization-scroll caption { padding: 12px; color: #59657a; text-align: left; }
 .amortization-scroll th, .amortization-scroll td { padding: 12px; border-bottom: 1px solid #e7ebf2; white-space: nowrap; }
 .amortization-scroll thead th { position: sticky; top: 0; background: #f8fafc; z-index: 1; text-align: right; }
-.amortization-scroll th:first-child { text-align: left; }
-.amortization-scroll tbody th { font-weight: 650; background: #f8fafc; }
+.amortization-scroll th { text-align: left; }
+.amortization-scroll tbody th { background: #f8fafc; }
 .amortization-scroll td { text-align: right; font-variant-numeric: tabular-nums; }
-.amortization-scroll tbody tr:hover td { background: #f4f7ff; }
+.amortization-info { position: relative; width: fit-content; }
+.amortization-info [role="tooltip"] { position: absolute; top: 100%; left: 0; z-index: 3; width: min(420px, calc(100vw - 64px)); padding: 14px; background: #fff; border: 1px solid #7b879a; border-radius: 9px; box-shadow: 0 4px 16px #17203333; font-size: .875rem; line-height: 1.5; }
