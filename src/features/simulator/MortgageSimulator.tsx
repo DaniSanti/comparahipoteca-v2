@@ -428,8 +428,6 @@ export function MortgageSimulator() {
         {comparisonFeedback}
       </p>
 
-      {result && <AmortizationTable result={result} variable={values.type === "variable"} />}
-
       <ComparisonTable
         simulations={simulations}
         onRemove={removeCurrent}
@@ -457,6 +455,8 @@ export function MortgageSimulator() {
           </div>
         )}
       </div>
+
+      {result && <AmortizationTable result={result} variable={values.type === "variable"} />}
     </main>
   );
 }
