@@ -102,14 +102,23 @@ button:disabled, button[aria-disabled="true"] { color: #4d596d; background: #d9d
 .privacy-footer p { margin: 4px 0 0; }
 .privacy-link { width: auto; min-height: 44px; padding: 8px 0; color: #1749b4; background: transparent; border-radius: 3px; font-size: .875rem; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
 .privacy-link:hover { color: #172033; background: transparent; }
-.consent-banner { position: fixed; bottom: 12px; left: 12px; right: 12px; z-index: 10; width: min(640px, calc(100% - 24px)); max-height: min(70svh, calc(100svh - 24px)); margin: 0 auto; padding: 16px; overflow-y: auto; color: #172033; background: #fff; border: 1px solid #7b879a; border-radius: 14px; box-shadow: 0 8px 32px rgb(23 32 51 / 20%); }
-.consent-banner h2 { margin: 0 0 8px; font-size: 1.125rem; }
-.consent-banner p { margin: 0 0 14px; color: #59657a; font-size: .875rem; line-height: 1.5; }
-.consent-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.consent-actions button { min-height: 52px; padding: 10px 12px; font-size: .875rem; font-weight: 700; }
-.consent-details { margin-top: 8px; }
-.consent-details summary { width: fit-content; min-height: 44px; padding: 12px 0; color: #1749b4; font-size: .875rem; font-weight: 650; cursor: pointer; }
-.consent-details p { margin: 8px 0; }
+.consent-banner { position: fixed; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); z-index: 10; display: grid; gap: 8px; width: min(1100px, calc(100% - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))); max-height: min(70svh, calc(100svh - 16px - env(safe-area-inset-bottom, 0px))); margin: 0 auto; padding: 12px; overflow-y: auto; color: #172033; background: #fff; border: 1px solid #7b879a; border-radius: 12px; box-shadow: 0 4px 20px rgb(23 32 51 / 16%); }
+.consent-copy { min-width: 0; }
+.consent-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; column-gap: 8px; }
+.consent-banner h2 { margin: 0; font-size: .875rem; line-height: 1.4; }
+.consent-banner p { margin: 0; color: #59657a; font-size: .875rem; line-height: 1.4; }
+.consent-more { flex: none; width: auto; min-height: 44px; padding: 4px 2px; color: #1749b4; background: transparent; border-radius: 3px; font-size: .8125rem; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
+.consent-more:hover { color: #172033; background: transparent; }
+.consent-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-self: center; }
+.consent-actions button { min-height: 44px; padding: 8px 6px; font-size: .875rem; font-weight: 700; }
+.consent-details { min-width: 0; padding-top: 8px; border-top: 1px solid #dfe5ef; }
+.consent-details p + p { margin-top: 8px; }
+
+@media (min-width: 760px) {
+  .consent-banner { grid-template-columns: minmax(0, 1fr) 292px; column-gap: 20px; }
+  .consent-heading { justify-content: flex-start; column-gap: 16px; }
+  .consent-details { grid-column: 1 / -1; }
+}
 
 @media (max-width: 1100px) {
   .scroll-hint { display: block; }

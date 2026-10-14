@@ -5,6 +5,7 @@ import { getFocusScrollDistance } from "./focusVisibility";
 
 export function PrivacyControls({ consent }: { consent: ConsentState }) {
   const [preferencesOpen, setPreferencesOpen] = useState(false);
+  const [informationOpen, setInformationOpen] = useState(false);
   const [bannerHeight, setBannerHeight] = useState(300);
   const bannerRef = useRef<HTMLElement>(null);
   const acceptRef = useRef<HTMLButtonElement>(null);
@@ -51,6 +52,7 @@ export function PrivacyControls({ consent }: { consent: ConsentState }) {
   const choose = (next: ConsentPreference) => {
     changeAnalyticsConsent(next);
     setPreferencesOpen(false);
+    setInformationOpen(false);
     // The action that opened the options remains available after they close.
     const returnTo = returnFocusRef.current ?? document.getElementById("purchasePrice");
     returnTo?.focus();
@@ -58,7 +60,7 @@ export function PrivacyControls({ consent }: { consent: ConsentState }) {
 
   return (
     <>
-      <footer className="privacy-footer" style={{ paddingBottom: visible ? bannerHeight + 32 : 24 }}>
+      <footer className="privacy-footer" style={{ paddingBottom: visible ? `calc(${bannerHeight + 32}px + env(safe-area-inset-bottom, 0px))` : 24 }}>
         <button
           ref={preferencesRef}
           type="button"
@@ -85,22 +87,34 @@ export function PrivacyControls({ consent }: { consent: ConsentState }) {
             }
           }}
         >
-          <h2 id="privacy-title">Analítica y privacidad</h2>
-          <p id="privacy-description">
-            Usamos Google Analytics y métricas de rendimiento para entender cómo se utiliza
-            ComparaHipoteca y mejorarla. Solo se activan si aceptas.
-          </p>
+          <div className="consent-copy">
+            <div className="consent-heading">
+              <h2 id="privacy-title">Analítica y privacidad</h2>
+              <button
+                type="button"
+                className="consent-more"
+                aria-expanded={informationOpen}
+                aria-controls="privacy-information"
+                onClick={() => setInformationOpen((open) => !open)}
+              >
+                {informationOpen ? "Menos información" : "Más información"}
+              </button>
+            </div>
+            <p id="privacy-description">
+              Google Analytics y rendimiento para mejorar la web, solo si aceptas.
+            </p>
+          </div>
           <div className="consent-actions">
-            <button ref={acceptRef} type="button" onClick={() => choose("accepted")}>
-              Aceptar analíticas
+            <button ref={acceptRef} type="button" aria-label="Aceptar analíticas" onClick={() => choose("accepted")}>
+              Aceptar
             </button>
             <button type="button" onClick={() => choose("rejected")}>Rechazar</button>
           </div>
-          <details className="consent-details">
-            <summary>Más información</summary>
+          <div id="privacy-information" className="consent-details" hidden={!informationOpen}>
             <p>
               Google Analytics 4 registra acciones generales de uso. Vercel Speed Insights
-              mide el rendimiento. La finalidad es exclusivamente analítica y de rendimiento;
+              mide el rendimiento para entender cómo se utiliza ComparaHipoteca y mejorarla.
+              La finalidad es exclusivamente analítica y de rendimiento;
               no enviamos los datos financieros de los campos ni las URLs de las simulaciones.
             </p>
             <p>
@@ -108,7 +122,7 @@ export function PrivacyControls({ consent }: { consent: ConsentState }) {
               «Preferencias de privacidad». Al revocar la aceptación recargamos la página
               para detener las métricas.
             </p>
-          </details>
+          </div>
         </section>
       )}
     </>
