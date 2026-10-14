@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { calculateMortgage } from "../../domain/mortgageCalculations";
 import type { MortgageField } from "../../domain/mortgageValidation";
 import type { MortgageInput } from "../../domain/mortgage";
+import { AmortizationTable } from "../amortization/AmortizationTable";
 import { ComparisonTable } from "../comparison/ComparisonTable";
 import {
   addSimulation,
@@ -84,6 +85,10 @@ export function MortgageSimulator() {
   }));
   const manualShareTracked = useRef(false);
   const [simulations, setSimulations] = useState<readonly MortgageSnapshot[]>([]);
+  const [amortizationSelection, setAmortizationSelection] = useState({ id: "", request: 0 });
+  const selectedSnapshot = simulations.find((item) => item.id === amortizationSelection.id) ?? simulations[0];
+  const selectedResult = useMemo(() => selectedSnapshot ? calculateMortgage(selectedSnapshot) : null, [selectedSnapshot]);
+  const amortizationNumber = selectedSnapshot ? simulations.indexOf(selectedSnapshot) + 1 : 1;
   const [touched, setTouched] = useState<TouchedFields>({});
   const [comparisonFeedback, setComparisonFeedback] = useState("");
   const [resultAnnouncement, setResultAnnouncement] = useState("");
@@ -98,6 +103,7 @@ export function MortgageSimulator() {
   const input = useMemo(() => toMortgageInput(values), [values]);
   const errors = useMemo(() => validateFormValues(values), [values]);
   const result = useMemo(() => calculateMortgage(input), [input]);
+  const amortizationResult = selectedResult ?? result;
   const visibleErrors = getVisibleErrors(errors, touched);
   const calculationIssue = getCalculationIssue(errors);
   const isFull = simulations.length >= MAX_COMPARISONS;
@@ -430,6 +436,7 @@ export function MortgageSimulator() {
       <ComparisonTable
         simulations={simulations}
         onRemove={removeCurrent}
+        onAmortization={(snapshot) => setAmortizationSelection((current) => ({ id: snapshot.id, request: current.request + 1 }))}
         sharingId={sharingId}
         onShare={share}
       />
@@ -454,6 +461,13 @@ export function MortgageSimulator() {
           </div>
         )}
       </div>
+
+      {amortizationResult && <AmortizationTable
+        result={amortizationResult}
+        variable={(selectedSnapshot?.type ?? values.type) === "variable"}
+        mortgageNumber={amortizationNumber}
+        revealRequest={selectedSnapshot ? amortizationSelection.request : 0}
+      />}
     </main>
   );
 }

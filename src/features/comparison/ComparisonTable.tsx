@@ -11,6 +11,7 @@ const percent = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 3 });
 interface ComparisonTableProps {
   simulations: readonly MortgageSnapshot[];
   onRemove: (id: string) => void;
+  onAmortization: (simulation: MortgageSnapshot) => void;
   onShare: (simulation: MortgageSnapshot, number: number) => void;
   sharingId: string | null;
 }
@@ -18,6 +19,7 @@ interface ComparisonTableProps {
 export function ComparisonTable({
   simulations,
   onRemove,
+  onAmortization,
   onShare,
   sharingId,
 }: ComparisonTableProps) {
@@ -145,6 +147,15 @@ export function ComparisonTable({
                     aria-disabled={sharingId !== null || undefined}
                   >
                     {sharingId === item.id ? "Compartiendo…" : "Compartir"}
+                  </button>
+                  <button
+                    type="button"
+                    className="table-button"
+                    onClick={() => onAmortization(item)}
+                    aria-label={`Amortización Hipoteca ${index + 1}`}
+                    aria-controls="amortization-table"
+                  >
+                    Amortización
                   </button>
                   <button
                     type="button"
