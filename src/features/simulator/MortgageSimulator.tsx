@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { calculateMortgage } from "../../domain/mortgageCalculations";
 import type { MortgageField } from "../../domain/mortgageValidation";
 import type { MortgageInput } from "../../domain/mortgage";
+import { AmortizationTable } from "../amortization/AmortizationTable";
 import { ComparisonTable } from "../comparison/ComparisonTable";
 import {
   addSimulation,
@@ -426,6 +427,8 @@ export function MortgageSimulator() {
       <p className="comparison-feedback" role="status" aria-atomic="true">
         {comparisonFeedback}
       </p>
+
+      {result && <AmortizationTable result={result} variable={values.type === "variable"} />}
 
       <ComparisonTable
         simulations={simulations}
