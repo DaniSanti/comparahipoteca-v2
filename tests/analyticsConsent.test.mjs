@@ -144,7 +144,8 @@ test("banner exposes equally available accept and reject actions and permanent p
   assert.match(html, /aria-labelledby="privacy-title"/);
   assert.match(html, /Aceptar analíticas/);
   assert.match(html, />Rechazar<\/button>/);
-  assert.match(html, /<details/);
+  assert.match(html, /aria-expanded="false" aria-controls="privacy-information"/);
+  assert.match(html, /id="privacy-information" class="consent-details" hidden=""/);
   assert.match(html, /Preferencias de privacidad/);
   assert.doesNotMatch(html, /aria-modal|role="dialog"|checked/);
   for (const consent of ["accepted", "rejected"]) {
