@@ -5,6 +5,13 @@ hasta cinco escenarios y compartir una simulación mediante URL. En las
 hipotecas variables consulta directamente el último Euríbor publicado por el
 Banco de España.
 
+La estimación incluye una tabla de amortización desplegable, con vistas anual y
+mensual y descarga completa de la vista seleccionada en PDF o CSV. La
+amortización muestra el capital del periodo y el capital amortizado acumulado.
+Los periodos se cuentan desde el inicio de la hipoteca; en hipotecas variables
+se proyecta el TIN actual constante. Las descargas se generan en el navegador,
+sin enviar los datos financieros a ningún servicio.
+
 La aplicación es completamente cliente: no necesita base de datos, backend ni
 credenciales. Las simulaciones comparadas solo viven durante la sesión actual.
 
