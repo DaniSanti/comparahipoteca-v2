@@ -2,12 +2,12 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 
-// Fixed byte limits, based on main at 0fc76b2. See docs/performance.md.
+// Fixed byte limits; CSS raw updated for the contribution UI in PR #24. See docs/performance.md.
 export const BUNDLE_BUDGETS = Object.freeze({
   jsRaw: 210_000,
   jsGzip: 68_000,
   jsChunkGzip: 68_000,
-  cssRaw: 12_000,
+  cssRaw: 14_000,
   cssGzip: 3_400,
 });
 
