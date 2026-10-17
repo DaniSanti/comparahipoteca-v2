@@ -73,7 +73,7 @@ test("sharing: una URL válida restaura campos y resultado", async ({ page }) =>
   await page.goto("/?sim=1,f,180000,50000,20,2.5");
   await expect(page.getByRole("status").filter({ hasText: "Simulación cargada" })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Precio de compra", exact: true })).toHaveValue("180000");
-  await expect(page.getByRole("textbox", { name: "Ahorro o aportación", exact: true })).toHaveValue("50000");
+  await expect(page.getByRole("textbox", { name: "Aportación", exact: true })).toHaveValue("50000");
   await expect(page.getByRole("spinbutton", { name: "Plazo", exact: true })).toHaveValue("20");
   await expect(page.getByRole("radio", { name: "Fija", exact: true })).toBeChecked();
   await expect(page.getByRole("textbox", { name: "TIN fijo anual", exact: true })).toHaveValue("2.5");
@@ -113,7 +113,11 @@ test("accesibilidad: teclado, labels y foco visible en controles principales", a
   await page.keyboard.press("Tab");
   await expectVisibleFocus(price);
   await page.keyboard.press("Tab");
-  await expectVisibleFocus(page.getByRole("textbox", { name: "Ahorro o aportación", exact: true }));
+  await expectVisibleFocus(page.getByRole("button", { name: "Aportación", exact: true }));
+  await page.keyboard.press("Tab");
+  await expectVisibleFocus(page.getByRole("textbox", { name: "Aportación", exact: true }));
+  await page.keyboard.press("Tab");
+  await expectVisibleFocus(page.getByRole("spinbutton", { name: "% de aportación", exact: true }));
   await page.keyboard.press("Tab");
   await expectVisibleFocus(page.getByRole("spinbutton", { name: "Plazo", exact: true }));
   await page.keyboard.press("Tab");

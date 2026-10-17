@@ -17,8 +17,15 @@ No se detectaron anomalías que justifiquen optimizaciones o code splitting.
 | JS total raw | 174.020 | 210.000 | 20,7 % |
 | JS total gzip | 56.841 | 68.000 | 19,6 % |
 | Mayor chunk JS gzip | 56.841 | 68.000 | 19,6 % |
-| CSS total raw | 9.743 | 12.000 | 23,2 % |
-| CSS total gzip | 2.746 | 3.400 | 23,8 % |
+| CSS total raw | 13.630 | 14.000 | 2,7 % |
+| CSS total gzip | 3.380 | 3.400 | 0,6 % |
+
+La referencia CSS se actualizó el 17 de octubre de 2026 con el build de CI
+(Node 20.20.2, commit `c9683ed`, PR #24). Incluye los estilos de amortización,
+el bloque conjunto de aportación y porcentaje, su disposición móvil y el tooltip
+accesible. El límite raw pasa de 12.000 a 14.000 bytes para incluir esos cambios
+funcionales; el límite gzip de 3.400 bytes y todos los límites JS se conservan.
+El presupuesto CSS anterior correspondía a 9.743 bytes raw y 2.746 gzip.
 
 El mayor JS raw también es de 174.020 bytes. Archivos de referencia:
 `index-DrQzfBZ7.js` y `index-B5UdTz8r.css`; sus hashes no forman parte del check.
