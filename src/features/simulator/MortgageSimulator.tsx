@@ -23,6 +23,7 @@ import {
 import { shareLink } from "../sharing/shareLink";
 import { chooseEuriborValue } from "./euriborDefault";
 import { useEuribor } from "./useEuribor";
+import { contributionPercent, savingsFromPercent } from "./contribution";
 import { toMortgageInput, validateFormValues, type FormValues } from "./numberInput";
 import { analytics, trackEvent } from "../../analytics/runtime";
 import { createCalculationTracker } from "../../analytics/calculationTracking";
@@ -84,6 +85,7 @@ export function MortgageSimulator() {
     emit: () => trackEvent("mortgage_calculated"),
   }));
   const manualShareTracked = useRef(false);
+  const [percentDraft, setPercentDraft] = useState<string | null>(null);
   const [simulations, setSimulations] = useState<readonly MortgageSnapshot[]>([]);
   const [amortizationSelection, setAmortizationSelection] = useState({ id: "", request: 0 });
   const selectedSnapshot = simulations.find((item) => item.id === amortizationSelection.id) ?? simulations[0];
@@ -151,8 +153,19 @@ export function MortgageSimulator() {
     value: FormValues[Key],
   ) => {
     if (values[field] === value) return;
+    if (field === "savings" || field === "purchasePrice") setPercentDraft(null);
     setUserRevision((current) => current + 1);
     setValues((current) => ({ ...current, [field]: value }));
+  };
+
+  const updatePercent = (value: string) => {
+    if (value !== "" && (!/^\d+$/.test(value) || Number(value) > 100)) return;
+    setPercentDraft(value);
+    setUserRevision((current) => current + 1);
+    setValues((current) => ({
+      ...current,
+      savings: value === "" ? "" : savingsFromPercent(current.purchasePrice, value),
+    }));
   };
 
   const addCurrent = () => {
@@ -262,15 +275,34 @@ export function MortgageSimulator() {
               onBlur={() => touch("purchasePrice")}
               error={visibleErrors.purchasePrice}
             />
-            <NumberField
-              id="savings"
-              label="Ahorro o aportación"
-              suffix="€"
-              value={values.savings}
-              onChange={(value) => update("savings", value)}
-              onBlur={() => touch("savings")}
-              error={visibleErrors.savings}
-            />
+            <div className="contribution-field">
+              <div className="contribution-inputs">
+                <NumberField
+                  id="savings"
+                  label="Aportación"
+                  suffix="€"
+                  value={values.savings}
+                  onChange={(value) => update("savings", value)}
+                  onBlur={() => touch("savings")}
+                  error={visibleErrors.savings}
+                />
+                <NumberField
+                  id="savingsPercent"
+                  label="% de aportación"
+                  suffix="%"
+                  value={percentDraft ?? contributionPercent(values.purchasePrice, values.savings)}
+                  onChange={updatePercent}
+                  onBlur={() => { setPercentDraft(null); touch("savings"); }}
+                  integer
+                  min={0}
+                  max={100}
+                  disabled={!Number.isFinite(input.purchasePrice) || input.purchasePrice <= 0}
+                />
+              </div>
+              <p className="form-note contribution-note">
+                Sobre el precio de compra, sin impuestos ni otros gastos.
+              </p>
+            </div>
             <NumberField
               id="termYears"
               label="Plazo"
@@ -517,6 +549,9 @@ interface NumberFieldProps {
   onBlur: () => void;
   describedBy?: string;
   integer?: boolean;
+  min?: number;
+  max?: number;
+  disabled?: boolean;
 }
 
 function NumberField({
@@ -529,6 +564,9 @@ function NumberField({
   describedBy,
   error,
   integer = false,
+  min,
+  max,
+  disabled,
 }: NumberFieldProps) {
   const errorId = `${id}-error`;
 
@@ -542,6 +580,9 @@ function NumberField({
           type={integer ? "number" : "text"}
           inputMode={integer ? "numeric" : "decimal"}
           step={integer ? "1" : undefined}
+          min={min}
+          max={max}
+          disabled={disabled}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           onBlur={onBlur}

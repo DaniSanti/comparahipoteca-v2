@@ -169,3 +169,12 @@ button:disabled, button[aria-disabled="true"] { color: #4d596d; background: #d9d
 .amortization-scroll td { text-align: right; font-variant-numeric: tabular-nums; }
 .amortization-info { position: relative; width: fit-content; }
 .amortization-info [role="tooltip"] { position: absolute; top: 100%; left: 0; z-index: 3; width: min(420px, calc(100vw - 64px)); padding: 14px; background: #fff; border: 1px solid #7b879a; border-radius: 9px; box-shadow: 0 4px 16px #17203333; font-size: .875rem; line-height: 1.5; }
+.contribution-inputs { display: grid; grid-template-columns: minmax(0, 1fr) 88px; }
+.contribution-inputs .field { margin-bottom: 0; }
+.contribution-inputs .field:first-child input { border-radius: 9px 0 0 9px; }
+.contribution-inputs .field:last-child input { border-radius: 0 9px 9px 0; border-left-width: 0; padding-right: 25px; appearance: textfield; }
+.contribution-inputs .field:last-child input:focus { border-left-width: 1px; }
+.contribution-inputs .field:last-child label { overflow: hidden; white-space: nowrap; text-indent: -9999px; }
+.contribution-inputs input::-webkit-inner-spin-button, .contribution-inputs input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.contribution-inputs input:disabled { background: #f1f3f6; }
+.contribution-note { margin: 6px 0 16px; font-size: .75rem; }
