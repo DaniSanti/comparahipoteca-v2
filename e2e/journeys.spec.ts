@@ -31,7 +31,7 @@ test("hipoteca fija: cálculo automático y TIN con coma", async ({ page }) => {
   await expect(results).toContainText("1245,54");
   await tin.fill("3,25");
   await expect(results).toContainText("1315,75");
-  await expect(results).toContainText("TIN aplicado: 3,25 %");
+  await expect(results).not.toContainText("TIN aplicado");
   await expect(tin).toHaveAttribute("aria-invalid", "false");
   await expect(page.getByRole("button", { name: "Calcular hipoteca" })).toHaveCount(0);
 });
@@ -45,7 +45,7 @@ test("hipoteca variable: Euríbor oficial simulado y diferencial con coma", asyn
   const results = page.getByRole("region", { name: "Tu estimación" });
   await expect(results).toContainText("1076,34");
   await page.getByRole("textbox", { name: "Diferencial", exact: true }).fill("1,25");
-  await expect(results).toContainText("TIN: Euríbor + diferencial: 4 %");
+  await expect(results).not.toContainText("TIN: Euríbor + diferencial");
   await expect(results).toContainText("1134,85");
   expect(networkGuard.euriborRequests).toHaveLength(1);
   expect(networkGuard.euriborRequests[0]).toContain("series=D_1NBAF472");
