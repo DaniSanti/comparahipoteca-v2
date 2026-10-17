@@ -135,7 +135,7 @@ export function MortgageSimulator() {
 
   // Announce a concise result after typing pauses, rather than the whole panel.
   const announcement = result
-    ? `Cuota mensual estimada: ${money.format(result.monthlyPayment)}. TIN aplicado: ${percent.format(result.annualInterestRate)} %.`
+    ? `Cuota mensual estimada: ${money.format(result.monthlyPayment)}.`
     : `No se puede calcular la cuota. ${calculationIssue}`;
   useEffect(() => {
     const timer = window.setTimeout(() => setResultAnnouncement(announcement), 500);
@@ -388,11 +388,6 @@ export function MortgageSimulator() {
               <div className="primary-result">
                 <span>Cuota mensual estimada</span>
                 <strong>{money.format(result.monthlyPayment)}</strong>
-                <small>
-                  {values.type === "variable"
-                    ? "TIN: Euríbor + diferencial"
-                    : "TIN aplicado"}: {percent.format(result.annualInterestRate)} %
-                </small>
               </div>
               {values.type === "variable" && (
                 <p className="variable-note">
