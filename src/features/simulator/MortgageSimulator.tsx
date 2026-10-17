@@ -307,32 +307,31 @@ export function MortgageSimulator() {
               error={visibleErrors.termYears}
               integer
             />
+            <fieldset className="mortgage-type">
+              <legend>Tipo de hipoteca</legend>
+              <div className="type-options">
+                {(["fixed", "variable"] as const).map((type) => (
+                  <label
+                    className={
+                      values.type === type
+                        ? "type-option selected"
+                        : "type-option"
+                    }
+                    key={type}
+                  >
+                    <input
+                      type="radio"
+                      name="mortgageType"
+                      value={type}
+                      checked={values.type === type}
+                      onChange={() => update("type", type)}
+                    />
+                    {type === "fixed" ? "Fija" : "Variable"}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
           </div>
-
-          <fieldset>
-            <legend>Tipo de hipoteca</legend>
-            <div className="type-options">
-              {(["fixed", "variable"] as const).map((type) => (
-                <label
-                  className={
-                    values.type === type
-                      ? "type-option selected"
-                      : "type-option"
-                  }
-                  key={type}
-                >
-                  <input
-                    type="radio"
-                    name="mortgageType"
-                    value={type}
-                    checked={values.type === type}
-                    onChange={() => update("type", type)}
-                  />
-                  {type === "fixed" ? "Fija" : "Variable"}
-                </label>
-              ))}
-            </div>
-          </fieldset>
 
           {values.type === "fixed" ? (
             <NumberField
