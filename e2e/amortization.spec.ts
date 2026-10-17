@@ -44,15 +44,16 @@ for (const width of [390, 1440]) {
   });
 }
 
-test("amortización: hipoteca variable y compra sin financiación", async ({ page }) => {
+test("amortización: hipoteca variable y aportación superior al precio", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Rechazar", exact: true }).click();
   await page.getByRole("radio", { name: "Variable", exact: true }).check();
   const details = page.locator(".amortization-section");
   await details.locator("summary").click();
   await expect(details).toContainText("TIN actual constante durante todo el plazo");
-  await page.getByRole("textbox", { name: "Ahorro o aportación", exact: true }).fill("300000");
-  await expect(details).toContainText("No hay capital financiado que amortizar");
+  await page.getByRole("textbox", { name: "Aportación", exact: true }).fill("300000");
+  await expect(page.getByRole("region", { name: "Tu estimación" })).toContainText("La aportación no puede superar el precio de compra");
+  await expect(details).toHaveCount(0);
   await expect(details.getByRole("button", { name: "Descargar CSV" })).toHaveCount(0);
 });
 
