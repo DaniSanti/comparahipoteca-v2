@@ -104,7 +104,7 @@ export function MortgageSimulator() {
   const { state: euriborState, retry: retryEuribor } = useEuribor();
   const input = useMemo(() => toMortgageInput(values), [values]);
   const errors = useMemo(() => validateFormValues(values), [values]);
-  const result = useMemo(() => calculateMortgage(input), [input]);
+  const result = useMemo(() => Object.keys(errors).length ? null : calculateMortgage(input), [input, errors]);
   const amortizationResult = selectedResult ?? result;
   const visibleErrors = getVisibleErrors(errors, touched);
   const calculationIssue = getCalculationIssue(errors);

@@ -178,3 +178,6 @@ button:disabled, button[aria-disabled="true"] { color: #4d596d; background: #d9d
 .contribution-inputs input::-webkit-inner-spin-button, .contribution-inputs input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .contribution-inputs input:disabled { background: #f1f3f6; }
 .contribution-note { margin: 6px 0 16px; font-size: .75rem; }
+@media (max-width: 600px) {
+  .field-grid:not(.rate-fields) { grid-template-columns: 1fr; }
+}

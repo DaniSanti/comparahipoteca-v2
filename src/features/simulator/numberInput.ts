@@ -39,6 +39,9 @@ export const toMortgageInput = (values: FormValues): MortgageInput => ({
 
 export const validateFormValues = (values: FormValues): MortgageValidationErrors => {
   const errors = validateMortgageInput(toMortgageInput(values));
+  if (!errors.savings && parseDecimalNumber(values.savings) > parseDecimalNumber(values.purchasePrice)) {
+    errors.savings = "La aportación no puede superar el precio de compra (100 %).";
+  }
   const activeFields: MortgageField[] = [
     "purchasePrice",
     "savings",
