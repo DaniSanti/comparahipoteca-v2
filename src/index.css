@@ -19,7 +19,6 @@ h1 { margin: 0; font-size: clamp(1.75rem, 5vw, 2.75rem); line-height: 1.15; lett
 .simulator-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr); gap: 24px; align-items: start; }
 .panel { min-width: 0; background: #fff; border: 1px solid #dfe5ef; border-radius: 18px; box-shadow: 0 12px 32px rgb(39 58 93 / 8%); padding: 24px; }
 h2 { margin: 0 0 16px; font-size: 1.25rem; }
-.auto-note { margin: -6px 0 18px; color: #59657a; font-size: .875rem; line-height: 1.5; }
 .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 14px; }
 .field { min-width: 0; margin-bottom: 16px; }
 .form-panel > .field:last-child { margin-bottom: 0; }
@@ -138,7 +137,6 @@ button:disabled, button[aria-disabled="true"] { color: #4d596d; background: #d9d
   .input-wrap input::-webkit-inner-spin-button, .input-wrap input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   .input-wrap span { right: 10px; }
   #termYears { padding-right: 50px; }
-  .auto-note { margin-bottom: 14px; }
   .primary-result { padding: 16px; }
   .results-panel { position: static; }
   .comparison-section { margin-top: 24px; padding: 16px 0 16px 16px; border-radius: 14px; }

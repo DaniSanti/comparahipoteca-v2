@@ -95,8 +95,8 @@ test("decimal controls expose text inputs and decimal keyboards while term retai
   const html = renderToStaticMarkup(createElement(MortgageSimulator));
   for (const id of ["purchasePrice", "savings", "fixedTin"]) {
     assert.match(html, new RegExp(`id="${id}" name="${id}" type="text" inputMode="decimal"`, "i"));
-    assert.match(html, new RegExp(`aria-describedby="${id}-unit decimal-format"`));
+    assert.match(html, new RegExp(`aria-describedby="${id}-unit"`));
   }
   assert.match(html, /id="termYears" name="termYears" type="number" inputMode="numeric" step="1"/i);
-  assert.match(html, /id="decimal-format"/);
+  assert.doesNotMatch(html, /decimal-format/);
 });
