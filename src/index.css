@@ -16,7 +16,7 @@ button, input { font: inherit; }
 .eyebrow { margin: 0 0 8px; color: #2358d3; font-size: .82rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 h1 { margin: 0; font-size: clamp(1.75rem, 5vw, 2.75rem); line-height: 1.15; letter-spacing: -.04em; }
 .intro > p:last-child { margin: 10px 0 0; color: #59657a; line-height: 1.5; }
-.simulator-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr); gap: 24px; align-items: start; }
+.simulator-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr); gap: 24px; align-items: stretch; }
 .panel { min-width: 0; background: #fff; border: 1px solid #dfe5ef; border-radius: 18px; box-shadow: 0 12px 32px rgb(39 58 93 / 8%); padding: 24px; }
 h2 { margin: 0 0 16px; font-size: 1.25rem; }
 .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 14px; }
@@ -46,15 +46,14 @@ button:hover { background: #1948b4; }
 :focus-visible { outline: 3px solid #2358d3; outline-offset: 3px; }
 button:focus-visible { outline: 3px solid #172033; outline-offset: 3px; }
 .form-note { margin: 14px 0 0; color: #59657a; font-size: .82rem; line-height: 1.5; }
-.results-panel { position: static; }
-.primary-result { padding: 22px; color: white; background: #193a83; border-radius: 13px; }
-.primary-result span, .primary-result small { display: block; color: #dbe5ff; }
-.primary-result strong { display: block; margin: 7px 0; font-size: clamp(1.75rem, 5vw, 2.7rem); letter-spacing: -.04em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.result-list { margin: 16px 0 0; }
-.result-row { display: flex; flex-wrap: wrap; justify-content: space-between; column-gap: 14px; row-gap: 6px; padding: 12px 0; border-bottom: 1px solid #e7ebf2; }
-.result-row dt { color: #59657a; }
-.result-row dd { margin: 0 0 0 auto; font-weight: 750; text-align: right; font-variant-numeric: tabular-nums; }
-.result-row.emphasized { border-bottom: 0; font-size: 1.08rem; }
+.results-panel { display: flex; flex-direction: column; }
+.primary-result { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; align-items: center; padding: 10px; color: white; background: #193a83; border-radius: 13px; }
+.primary-result span, .primary-result small { color: #dbe5ff; }
+.primary-result strong { grid-column: 2; grid-row: 1 / 3; margin: 0; font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -.04em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.result-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; margin: 12px 0 0; }
+.result-row { min-width: 0; padding: 2px 0; }
+.result-row dt { color: #59657a; font-size: .8rem; }
+.result-row dd { margin: 3px 0 0; font-weight: 750; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 .result-row.emphasized dt, .result-row.emphasized dd { color: #172033; font-weight: 800; }
 .empty-result { padding: 16px; color: #7d3540; background: #fff4f4; border-radius: 9px; line-height: 1.5; }
 .empty-result p { margin: 0; }
@@ -122,9 +121,6 @@ button:disabled, button[aria-disabled="true"] { color: #4d596d; background: #d9d
 @media (max-width: 1100px) {
   .scroll-hint { display: block; }
 }
-@media (min-width: 901px) and (min-height: 850px) {
-  .results-panel { position: sticky; top: 24px; }
-}
 
 @media (max-width: 900px) {
   .page-shell { width: min(100% - 24px, 600px); padding: 20px 0 40px; }
@@ -137,8 +133,6 @@ button:disabled, button[aria-disabled="true"] { color: #4d596d; background: #d9d
   .input-wrap input::-webkit-inner-spin-button, .input-wrap input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   .input-wrap span { right: 10px; }
   #termYears { padding-right: 50px; }
-  .primary-result { padding: 16px; }
-  .results-panel { position: static; }
   .comparison-section { margin-top: 24px; padding: 16px 0 16px 16px; border-radius: 14px; }
   .comparison-heading, .comparison-help, .scroll-hint { margin-right: 16px; }
   .comparison-scroll { border-right: 0; border-radius: 10px 0 0 10px; }
@@ -188,3 +182,6 @@ button:disabled, button[aria-disabled="true"] { color: #4d596d; background: #d9d
 .mortgage-type legend { padding: 0; }
 .mortgage-type .type-options { gap: 6px; }
 .mortgage-type .type-option { gap: 4px; padding: 10px 6px; font-size: .875rem; }
+
+.results-panel .form-note { margin: 8px 0 10px; font-size: .75rem; }
+.results-panel .add-button { min-height: 44px; margin-top: auto; padding: 10px 12px; }
