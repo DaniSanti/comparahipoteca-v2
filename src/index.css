@@ -184,3 +184,7 @@ button:disabled, button[aria-disabled="true"] { color: #4d596d; background: #d9d
 @media (max-width: 600px) {
   .field-grid:not(.rate-fields) { grid-template-columns: 1fr; }
 }
+
+.mortgage-type legend { padding: 0; }
+.mortgage-type .type-options { gap: 6px; }
+.mortgage-type .type-option { gap: 4px; padding: 10px 6px; font-size: .875rem; }

@@ -17,7 +17,7 @@ test("initial simulator exposes named form, labels, automatic result and no subm
     assert.match(html, new RegExp(`<label for="${id}"(?: class="sr-only")?>`));
     assert.match(html, new RegExp(`aria-describedby="${id}-unit"`));
   }
-  assert.match(html, /<fieldset><legend>Tipo de hipoteca<\/legend>/);
+  assert.match(html, /<fieldset class="mortgage-type"><legend>Tipo de hipoteca<\/legend>/);
   assert.match(html, /Cuota mensual estimada/);
   assert.match(html, /role="status" aria-atomic="true"/);
 });
