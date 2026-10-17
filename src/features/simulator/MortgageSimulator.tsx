@@ -260,12 +260,8 @@ export function MortgageSimulator() {
           onSubmit={(event) => event.preventDefault()}
           noValidate
           aria-labelledby="form-title"
-          aria-describedby="auto-calculation"
         >
           <h2 id="form-title">Datos de tu hipoteca</h2>
-          <p id="auto-calculation" className="auto-note">
-            La cuota se actualiza al cambiar los datos.
-          </p>
           <div className="field-grid">
             <NumberField
               id="purchasePrice"
@@ -379,9 +375,6 @@ export function MortgageSimulator() {
               </div>
             </div>
           )}
-          <p className="form-note" id="decimal-format">
-            Decimales con coma o punto, sin separadores de miles.
-          </p>
         </form>
 
         <section
@@ -442,18 +435,18 @@ export function MortgageSimulator() {
             className="add-button"
             onClick={addCurrent}
             aria-disabled={!result || isFull || undefined}
-            aria-describedby="comparison-limit"
+            aria-describedby={isFull || !result ? "comparison-limit" : undefined}
           >
             Añadir a comparación
             <span>{simulations.length} de {MAX_COMPARISONS}</span>
           </button>
-          <p className="limit-note" id="comparison-limit">
-            {isFull
-              ? "Máximo de 5 hipotecas. Elimina una para añadir otra."
-              : !result
-                ? "Corrige los datos antes de añadir esta hipoteca."
-                : "Las comparaciones no se guardan al cerrar la sesión."}
-          </p>
+          {(isFull || !result) && (
+            <p className="limit-note" id="comparison-limit">
+              {isFull
+                ? "Máximo de 5 hipotecas. Elimina una para añadir otra."
+                : "Corrige los datos antes de añadir esta hipoteca."}
+            </p>
+          )}
         </section>
       </div>
       <p className="sr-only" role="status" aria-atomic="true">
@@ -587,7 +580,6 @@ function NumberField({
           aria-invalid={Boolean(error)}
           aria-describedby={[
             `${id}-unit`,
-            integer ? undefined : "decimal-format",
             describedBy,
             error ? errorId : undefined,
           ]

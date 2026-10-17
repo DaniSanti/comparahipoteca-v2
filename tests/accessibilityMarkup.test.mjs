@@ -11,11 +11,11 @@ test("initial simulator exposes named form, labels, automatic result and no subm
   const html = renderToStaticMarkup(createElement(MortgageSimulator));
   assert.match(html, /<main/);
   assert.match(html, /<form[^>]*aria-labelledby="form-title"/);
-  assert.match(html, /La cuota se actualiza al cambiar los datos/);
+  assert.doesNotMatch(html, /La cuota se actualiza al cambiar los datos|Decimales con coma o punto|Las comparaciones no se guardan al cerrar la sesión|auto-calculation|decimal-format/);
   assert.doesNotMatch(html, /Calcular hipoteca|type="submit"|aria-invalid="true"/);
   for (const id of ["purchasePrice", "savings", "termYears", "fixedTin"]) {
     assert.match(html, new RegExp(`<label for="${id}"(?: class="sr-only")?>`));
-    assert.match(html, new RegExp(`aria-describedby="${id}-unit${id === "termYears" ? "" : " decimal-format"}"`));
+    assert.match(html, new RegExp(`aria-describedby="${id}-unit"`));
   }
   assert.match(html, /<fieldset><legend>Tipo de hipoteca<\/legend>/);
   assert.match(html, /Cuota mensual estimada/);
