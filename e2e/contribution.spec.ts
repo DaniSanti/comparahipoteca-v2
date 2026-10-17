@@ -37,3 +37,26 @@ for (const width of [1280, 375]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });
 }
+
+test("aclaración de aportación accesible con ratón, teclado y toque", async ({ page }) => {
+  await page.goto("/");
+  const trigger = page.getByRole("button", { name: "Aportación", exact: true });
+  const tooltip = page.getByRole("tooltip");
+  await expect(tooltip).toBeHidden();
+  await trigger.hover();
+  await expect(tooltip).toHaveText("Sobre el precio de compra, sin impuestos ni otros gastos.");
+  await page.mouse.move(0, 0);
+  await expect(tooltip).toBeHidden();
+  await trigger.focus();
+  await expect(tooltip).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(tooltip).toBeHidden();
+  await trigger.click();
+  await expect(tooltip).toBeVisible();
+  await page.getByRole("heading", { name: "Datos de tu hipoteca" }).click();
+  await expect(tooltip).toBeHidden();
+  await page.setViewportSize({ width: 375, height: 900 });
+  await trigger.click();
+  await expect(tooltip).toBeVisible();
+  await expect(page.getByLabel("Aportación", { exact: true })).toHaveValue("60000");
+});

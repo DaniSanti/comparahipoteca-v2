@@ -113,6 +113,8 @@ test("accesibilidad: teclado, labels y foco visible en controles principales", a
   await page.keyboard.press("Tab");
   await expectVisibleFocus(price);
   await page.keyboard.press("Tab");
+  await expectVisibleFocus(page.getByRole("button", { name: "Aportación", exact: true }));
+  await page.keyboard.press("Tab");
   await expectVisibleFocus(page.getByRole("textbox", { name: "Aportación", exact: true }));
   await page.keyboard.press("Tab");
   await expectVisibleFocus(page.getByRole("spinbutton", { name: "% de aportación", exact: true }));

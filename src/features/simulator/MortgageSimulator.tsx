@@ -23,6 +23,7 @@ import {
 import { shareLink } from "../sharing/shareLink";
 import { chooseEuriborValue } from "./euriborDefault";
 import { useEuribor } from "./useEuribor";
+import { ContributionLabel } from "./ContributionLabel";
 import { contributionPercent, savingsFromPercent } from "./contribution";
 import { toMortgageInput, validateFormValues, type FormValues } from "./numberInput";
 import { analytics, trackEvent } from "../../analytics/runtime";
@@ -299,9 +300,6 @@ export function MortgageSimulator() {
                   disabled={!Number.isFinite(input.purchasePrice) || input.purchasePrice <= 0}
                 />
               </div>
-              <p className="form-note contribution-note">
-                Sobre el precio de compra, sin impuestos ni otros gastos.
-              </p>
             </div>
             <NumberField
               id="termYears"
@@ -572,7 +570,7 @@ function NumberField({
 
   return (
     <div className="field">
-      <label htmlFor={id}>{label}</label>
+      {id === "savings" ? <ContributionLabel /> : <label htmlFor={id}>{label}</label>}
       <div className="input-wrap">
         <input
           id={id}
