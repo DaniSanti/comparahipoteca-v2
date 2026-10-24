@@ -25,7 +25,7 @@ export function AmortizationTable({ result, variable, mortgageNumber = 1, reveal
     try {
       const blob = format === "csv"
         ? new Blob([amortizationCsv(rows, period)], { type: "text/csv;charset=utf-8" })
-        : new Blob([amortizationPdf(rows, period, result, variable, mortgageNumber)], { type: "application/pdf" });
+        : new Blob([new Uint8Array(amortizationPdf(rows, period, result, variable, mortgageNumber))], { type: "application/pdf" });
       downloadAmortization(blob, `hipoteca-${mortgageNumber}-amortizacion-${period === "annual" ? "anual" : "mensual"}.${format}`);
       setFeedback(`Descarga ${format.toUpperCase()} preparada: ${rows.length} ${period === "annual" ? "años" : "meses"}.`);
     } catch {
